@@ -155,7 +155,6 @@ int main() {
 
                     SendMessage(s, std::to_string(usr->id()), Requests::Get_balance, req);
                     auto msg = ReadMessage(s);
-                    std::cout << msg << std::endl;
                     auto info =  nlohmann::json::parse(msg);
 
                     usr->set_balance(Currency::USD, info[Currency::USD]);

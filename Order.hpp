@@ -11,7 +11,8 @@ class Order{
 
 public:
 
-    Order(int64_t id_, int64_t user_id_, const std::string& pair_, const std::string& type_, double volum_, double price_)
+    Order(int64_t id_, int64_t user_id_, const std::string& pair_, const std::string& type_, double volum_, double price_, 
+                                            boost::posix_time::ptime open_time_ = boost::posix_time::second_clock::universal_time())
         : _id(id_)
         , _user_id(user_id_)
         , _pair(pair_)
@@ -19,7 +20,7 @@ public:
         , _volum(volum_)
         , _current_volum(_volum)
         , _price(price_)
-        , _open_timeUTC( boost::posix_time::second_clock::universal_time() )
+        , _open_timeUTC( open_time_ )
     {}
 
     int64_t id() { return _id; }

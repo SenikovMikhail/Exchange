@@ -1,7 +1,10 @@
 #ifndef CLIENSERVERECN_COMMON_HPP
 #define CLIENSERVERECN_COMMON_HPP
 
+#include "SHA256.hpp"
+
 #include <string>
+
 
 static short port = 5555;
 
@@ -30,6 +33,7 @@ namespace ERROR {
     
     static std::string Registration = "ERROR::USER NAME ALREADY USED";
     static std::string Login = "ERROR::USER NOT FOUND OR PASSWORD IS INCORRECT";
+    static std::string Update_pass = "ERROR::UPDATE PASSWORD";
 
 }
 

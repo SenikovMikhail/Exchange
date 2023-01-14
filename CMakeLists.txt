@@ -19,14 +19,16 @@ set(PQXX /home/kasper/programming/libpqxx/include/pqxx)
 find_library(PQXX_LIB pqxx)
 find_library(PQ_LIB pq)
 
+find_package(OpenSSL REQUIRED)
+
 include_directories (${PostgreSQL_INCLUDE_DIR} ${libpqxx_ROOT}/include)
 link_directories(${PostgreSQL_LIBRARY_DIR} ${libpqxx_ROOT}/lib)
 
 SET(CMAKE_CXX_STANDARD 17)
 
-ADD_EXECUTABLE(Server Server.cpp Common.hpp User.hpp json.hpp)
-target_include_directories(Server PRIVATE ${PostgreSQL_INCLUDE_DIRS})
-TARGET_LINK_LIBRARIES(Server PRIVATE Threads::Threads ${Boost_LIBRARIES} ${PQXX_LIB} ${PQ_LIB})
+ADD_EXECUTABLE(Server Server.cpp Common.hpp User.hpp json.hpp SHA256.hpp)
+target_include_directories(Server PRIVATE ${PostgreSQL_INCLUDE_DIRS} )
+TARGET_LINK_LIBRARIES(Server PRIVATE Threads::Threads ${Boost_LIBRARIES} ${PQXX_LIB} ${PQ_LIB} -lcrypto)
 
-ADD_EXECUTABLE(Client Client.cpp User.hpp Common.hpp json.hpp)
-TARGET_LINK_LIBRARIES(Client PRIVATE Threads::Threads ${Boost_LIBRARIES} ) 
+ADD_EXECUTABLE(Client Client.cpp User.hpp Common.hpp json.hpp SHA256.hpp )
+TARGET_LINK_LIBRARIES(Client PRIVATE Threads::Threads ${Boost_LIBRARIES} -lcrypto) 

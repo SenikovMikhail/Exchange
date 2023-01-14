@@ -42,6 +42,24 @@ public:
         pqxx::result Orders_count_req(Work2.exec(sql));
         Orders_count = Orders_count_req.begin()[0].as<int64_t>();
         Work2.commit();
+
+        pqxx::work  Work3(database);
+        sql = "Select * from orders where close_time='';";
+        pqxx::result Orders_count_list(Work3.exec(sql));
+        for(auto row : Orders_count_list) {
+
+            active_orders.emplace(row[0].as<int64_t>(), std::make_shared<Order>(row[0].as<int64_t>(), row[1].as<int64_t>(), 
+                                                                        row[2].as<std::string>(), row[3].as<std::string>(), 
+                                                                        row[4].as<double>(), row[5].as<double>(), 
+                                                                        boost::posix_time::time_from_string(row[6].as<std::string>())));
+
+            if(row[3].as<std::string>() == Requests::Buy)
+                active_buy_order.insert(active_orders[Orders_count]);
+            else if(row[3].as<std::string>() == Requests::Sell)
+                active_sell_order.insert(active_orders[Orders_count]);
+        }
+
+        Work2.commit();
     }
 
 
@@ -73,44 +91,79 @@ public:
 
 
     // "Регистрирует" нового пользователя и возвращает его ID.
-    std::string Register_new_user(const std::string& user_name, const std::string& pass) {
+    std::string Register_new_user(const std::string& user_name) {
 
         pqxx::work  Work(database);
         sql = "select * from users where user_name = '" + user_name + std::string("';");
-        pqxx::result Ans(Work.exec(sql));
+        pqxx::result Sql_ans(Work.exec(sql));
         Work.commit();
-        if(Ans.size() != 0 && Ans.begin()[1].as<std::string>() == user_name) {
+        if(Sql_ans.size() != 0 && Sql_ans.begin()[1].as<std::string>() == user_name) {
             return ERROR::Registration;
         } else {
+
+            nlohmann::json usr_info;
+            usr_info["user_id"] = std::to_string(Users_count);
+            std::string create_time = boost::posix_time::to_simple_string(boost::posix_time::second_clock::universal_time());
+            usr_info["create_time"] = create_time;
+
             std::cout << Users_count << std::endl;
             pqxx::work Work2(database);
-            sql = "insert into users (user_id, user_name, password, balance_usd, balance_rub) values(" + std::to_string(Users_count) 
-                        + std::string(", '") + user_name + std::string("', '") + pass + std::string("', 0, 0);");
+            sql = std::string("insert into users (user_id, user_name, password_hash, create_time, balance_usd, balance_rub) values(")
+                    + std::to_string(Users_count) + std::string(", '") + user_name + std::string("', '', '") 
+                    + create_time + std::string("', 0, 0);");
+
             Work2.exec(sql);
             Work2.commit();
 
             active_users.emplace(Users_count, std::make_shared<User>(Users_count, user_name));
             ++Users_count;
-            return std::to_string(Users_count-1);
+
+            return usr_info.dump();
 
         }
     }
 
+    std::string Update_user_pass(const std::string& user_id, const std::string& password){        
+
+        pqxx::work Work2(database);
+        sql = "update users set password_hash = '" + password +                    
+                    std::string("' where user_id = ") + user_id + std::string(";");;
+
+        Work2.exec(sql);
+        Work2.commit();
+
+        return "";      
+
+    }
 
 
-    std::string Login(const std::string& user_name, const std::string& password){
+    nlohmann::json Login(const std::string& user_name){
+
+        nlohmann::json req;
 
         pqxx::work  Work(database);
         sql = "select * from users  where user_name = '" + user_name + std::string("';");
         pqxx::result Ans(Work.exec(sql));
         Work.commit();
 
-        if(Ans.size() != 0 && Ans[0][1].as<std::string>() == user_name && Ans[0][2].as<std::string>() == password ) {
-            active_users.emplace(Ans[0][0].as<int64_t>(), std::make_shared<User>(Ans[0][0].as<int64_t>(), Ans[0][1].as<std::string>(), Ans[0][3].as<double>(), Ans[0][4].as<double>())); 
+        req["user_id"] = Ans.begin()[0].as<int64_t>();
+        req["password"] = Ans.begin()[2].as<std::string>();
+        req["sult"] = Ans.begin()[4].as<std::string>();
+        req["tmp_slut"] = boost::posix_time::to_simple_string(boost::posix_time::second_clock::universal_time());
 
-            return Ans.begin()[0].as<std::string>();
-        } else {
+        active_users.emplace(Ans.begin()[0].as<int64_t>(), std::make_shared<User>(Ans.begin()[0].as<int64_t>(), user_name, 
+            sha256(sha256(Ans.begin()[2].as<std::string>().append(req["tmp_slut"])))));
+
+        return req;
+    }
+
+    std::string Check_hash(const std::string& user_id, const std::string& hash){
+
+        if( hash != active_users[stoi(user_id)]->hash()){
+            active_users.erase(std::stoi(user_id));
             return ERROR::Login;
+        } else {  
+            return "";
         }
     }
 
@@ -293,12 +346,31 @@ public:
             std::string reply = "Error! Unknown request type\n";
 
             if (reqType == Requests::Login) {
+
+                std::string hash;
              
-                reply = GetCore().Login(j["name"], j["pass"]);
+                if(j["UserID"] == 0) {
+
+                    reply = GetCore().Login(j["name"]).dump();
+
+                } else {
+
+                    reply = GetCore().Check_hash(j["UserID"], j["hash"]);                    
+
+                }
 
             } else if(reqType == Requests::Registration){
 
-                reply = GetCore().Register_new_user(j["name"], j["pass"]);
+                if(j["UserId"] == 0){
+
+                    reply = GetCore().Register_new_user(j["name"]);
+
+                } else {
+
+                    reply = GetCore().Update_user_pass(j["UserId"], j["pass"]);
+
+                }
+         
 
             } else if (reqType == Requests::Get_balance) {
 

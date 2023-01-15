@@ -12,27 +12,23 @@
 Launch
 
   Required libs
+    
+      Boost
+      <img src="https://www.vectorlogo.zone/logos/postgresql/postgresql-ar21.svg" title="postgresql" alt="postgresql"  height="40"/> libpqxx
+      <img src="https://w7.pngwing.com/pngs/228/107/png-transparent-openssl-transport-layer-security-public-key-certificate-certificate-signing-request-pkcs-12-hypertext-transfer-protocol-text-trademark-logo.png" title="OpenSSL" alt="OpenSSL"  height="40"/> openssl 
+      <img src="https://www.vectorlogo.zone/logos/json/json-ar21.png" title="json" alt="json"  height="40"/> nlohmann json
 
-    <ul>
-      <li>Boost</li>
-      <li><img src="https://www.vectorlogo.zone/logos/postgresql/postgresql-ar21.svg" title="postgresql" alt="postgresql"  height="40"/>libpqxx</li>
-      <li><img src="https://w7.pngwing.com/pngs/228/107/png-transparent-openssl-transport-layer-security-public-key-certificate-certificate-signing-request-pkcs-12-hypertext-transfer-protocol-text-trademark-logo.png" title="OpenSSL" alt="OpenSSL"  height="40"/>openssl</li>  
-      <li><img src="https://www.vectorlogo.zone/logos/json/json-ar21.png" title="json" alt="json"  height="40"/>nlohmann json</li>
-    </ul>  
 
   Install
-
-    <ol>
-      <li>sudo cmake CMakeLists.txt</li>
-      <li>sudo make</li>
-    </ol>  
-
+ 
+      sudo cmake CMakeLists.txt
+      sudo make
 
   Use:
-    <ol>
-      <li>postgresql_setup.sh - create user, database and tables</li>
-      <li>launch Server</li>
-      <li>launch Client</li>
-    </ol>  
+
+      1) postgresql_setup.sh - create user, database and tables
+      2) launch Server
+      3) launch Client
+ 
 
   

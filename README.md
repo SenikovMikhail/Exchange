@@ -3,7 +3,7 @@
 
 <div id="header" align="left">
   <img src="https://media.giphy.com/media/S3n6idriKtiFbZyqve/giphy.gif" width="180" />
-  This project is a simple stock exchange is a async client-server application. How To Place Text in ImageHow To Place Text in ImageHow To Place Text in ImageHow To Place Text in ImageHow To Place Text in ImageHow To Place Text in ImageHow To Place Text in ImageHow To Place Text in ImageHow To Place Text in ImageHow To Place Text in Image
+  This project is a simple stock exchange is a async client-server application.
 </div>
 
 

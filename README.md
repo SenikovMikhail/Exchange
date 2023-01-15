@@ -1,15 +1,8 @@
 # Exchange
-<style>
-  
-  .logo {
-    margin-left:25%;
-  }
 
-</style>
-
-
-<div id="header" align="left" class="logo">
+<div id="header" align="left" style="margin-left:25%;">
   <img src="https://media.giphy.com/media/S3n6idriKtiFbZyqve/giphy.gif" width="180" />
+  test text
 </div>
 
 Install

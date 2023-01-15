@@ -106,7 +106,6 @@ public:
             std::string create_time = boost::posix_time::to_simple_string(boost::posix_time::second_clock::universal_time());
             usr_info["create_time"] = create_time;
 
-            std::cout << Users_count << std::endl;
             pqxx::work Work2(database);
             sql = std::string("insert into users (user_id, user_name, password_hash, create_time, balance_usd, balance_rub) values(")
                     + std::to_string(Users_count) + std::string(", '") + user_name + std::string("', '', '") 
@@ -132,12 +131,12 @@ public:
         Work2.exec(sql);
         Work2.commit();
 
-        return "";      
+        return SUCCESS::Update_pass;      
 
     }
 
 
-    nlohmann::json Login(const std::string& user_name){
+    std::string Login(const std::string& user_name){
 
         nlohmann::json req;
 
@@ -145,16 +144,19 @@ public:
         sql = "select * from users  where user_name = '" + user_name + std::string("';");
         pqxx::result Ans(Work.exec(sql));
         Work.commit();
+        if(Ans.size() > 0) {
+            req["user_id"] = Ans.begin()[0].as<int64_t>();
+            req["sult"] = Ans.begin()[3].as<std::string>();
+            req["tmp_slut"] = boost::posix_time::to_simple_string(boost::posix_time::second_clock::universal_time());
 
-        req["user_id"] = Ans.begin()[0].as<int64_t>();
-        req["password"] = Ans.begin()[2].as<std::string>();
-        req["sult"] = Ans.begin()[4].as<std::string>();
-        req["tmp_slut"] = boost::posix_time::to_simple_string(boost::posix_time::second_clock::universal_time());
+            active_users.emplace(Ans.begin()[0].as<int64_t>(), std::make_shared<User>(Ans.begin()[0].as<int64_t>(), user_name, 
+            sha256(Ans.begin()[2].as<std::string>().append(req["tmp_slut"]))));
 
-        active_users.emplace(Ans.begin()[0].as<int64_t>(), std::make_shared<User>(Ans.begin()[0].as<int64_t>(), user_name, 
-            sha256(sha256(Ans.begin()[2].as<std::string>().append(req["tmp_slut"])))));
+            return req.dump();
+        }
 
-        return req;
+        return ERROR::Login;
+
     }
 
     std::string Check_hash(const std::string& user_id, const std::string& hash){
@@ -163,19 +165,21 @@ public:
             active_users.erase(std::stoi(user_id));
             return ERROR::Login;
         } else {  
-            return "";
+            return SUCCESS::Check_hash;
         }
     }
 
 
     void Create_order(int64_t user_id, const std::string& pair, const std::string& order_type, int64_t volum, double price) {
-
+        std::cout << user_id << std::endl;
         active_orders.emplace(Orders_count, std::make_shared<Order>(Orders_count, user_id, pair, order_type, volum, price));
-
+std::cout << active_orders[Orders_count]->id() << std::endl;
         if(order_type == Requests::Buy)
             active_buy_order.insert(active_orders[Orders_count]);
         else if(order_type == Requests::Sell)
             active_sell_order.insert(active_orders[Orders_count]);
+
+        std::cout << user_id << std::endl;
 
         pqxx::work Work(database);
         sql = "insert into orders (order_id, user_id, pair, order_type, volum, price, open_time, close_time) \
@@ -239,7 +243,7 @@ public:
 
     void trade() {
         
-        while(!active_buy_order.empty() && !active_sell_order.empty() && (*--active_buy_order.end())->price() > (*(active_sell_order.begin()))->price()) {
+        while(!active_buy_order.empty() && !active_sell_order.empty() && (*--active_buy_order.end())->price() >= (*(active_sell_order.begin()))->price()) {
             
             std::multiset< std::shared_ptr<Order>, compare_by_open_price>::iterator buy_order_itr;
 
@@ -348,10 +352,9 @@ public:
             if (reqType == Requests::Login) {
 
                 std::string hash;
-             
-                if(j["UserID"] == 0) {
+                if(j["UserID"] == "-1") {
 
-                    reply = GetCore().Login(j["name"]).dump();
+                    reply = GetCore().Login(j["name"]);
 
                 } else {
 
@@ -361,16 +364,15 @@ public:
 
             } else if(reqType == Requests::Registration){
 
-                if(j["UserId"] == 0){
+                if(j["UserID"] == "-1"){
 
-                    reply = GetCore().Register_new_user(j["name"]);
+                    reply = GetCore().Register_new_user(j["name"]);                    
 
                 } else {
 
-                    reply = GetCore().Update_user_pass(j["UserId"], j["pass"]);
+                    reply = GetCore().Update_user_pass(j["UserID"], j["pass"]);
 
-                }
-         
+                }         
 
             } else if (reqType == Requests::Get_balance) {
 
@@ -379,9 +381,10 @@ public:
                 req.emplace(Currency::RUB, GetCore().Get_balance(j["UserID"], Currency::RUB));
 
                 reply = req.dump(2);
-                                std::cout <<  reply << std::endl;
 
             } else if (reqType == Requests::Buy || reqType == Requests::Sell) {
+
+                std::cout << j << std::endl;
                 
                 GetCore().Create_order(stoi(j["UserID"].get<std::string>()), j["pair"].get<std::string>(), 
                                             j["type"].get<std::string>(), j["volum"].get<int64_t>(), j["price"].get<double>());

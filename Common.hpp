@@ -34,8 +34,17 @@ namespace ERROR {
     static std::string Registration = "ERROR::USER NAME ALREADY USED";
     static std::string Login = "ERROR::USER NOT FOUND OR PASSWORD IS INCORRECT";
     static std::string Update_pass = "ERROR::UPDATE PASSWORD";
+    static std::string Check_hash = "ERROR::Check_hash";
 
 }
 
+namespace SUCCESS {
+
+    static std::string Registration = "SUCCESS::Registration";
+    static std::string Login = "SUCCESS::Login";
+    static std::string Update_pass = "SUCCESS::Update_pass";
+    static std::string Check_hash = "SUCCESS::Check_hash";
+
+}
 
 #endif //CLIENSERVERECN_COMMON_HPP

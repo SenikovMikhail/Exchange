@@ -23,6 +23,8 @@ public:
         , _open_timeUTC( open_time_ )
     {}
 
+
+
     int64_t id() { return _id; }
     int64_t user_id() { return _user_id; }
     std::string& pair() { return _pair; }

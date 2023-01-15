@@ -5,6 +5,8 @@
 #include "Common.hpp"
 #include "json.hpp"
 
+#include <openssl/sha.h>
+
 using boost::asio::ip::tcp;
 
 // Отправка сообщения на сервер по шаблону.
@@ -77,20 +79,33 @@ int main() {
 
                     nlohmann::json req;
                     req["name"] = name;
-                    req["pass"] = pass;
-
-                    SendMessage(s, "0", Requests::Login, req);
+                    
+                    SendMessage(s, "-1", Requests::Login, req);
                     std::string ans = ReadMessage(s);
 
-                    if(ans == ERROR::Login){
-                        std::cout <<"\n---------------------------------------------------------------\n\t" <<  ans << "\n---------------------------------------------------------------" << std::endl;;
+                    if(ans != ERROR::Login) {
+
+                        nlohmann::json login_info = nlohmann::json::parse(ans);
+                        req.clear();
+                        req["hash"] = sha256(sha256(pass.append(login_info["sult"])).append(login_info["tmp_slut"]));
+                        ans.clear();
+                        SendMessage(s,  to_string(login_info["user_id"]), Requests::Login, req);
+                        ans = ReadMessage(s);
+                        if(ans == ERROR::Login){
+                            std::cout << std::string(70, '-') << "\n\n\t" << ans << "\n\n" << std::string(70, '-') << "\n" << std::endl; 
+                        } else {
+                            usr = std::make_shared<User>(login_info["user_id"], name);
+                            start = false;
+                        }
+
+
                     } else {
-                        usr = std::make_shared<User>(std::stoi(ans), name);
-                        start = false;
+                        std::cout << std::string(70, '-') << "\n\n\t" << ans << "\n\n" << std::string(70, '-') << "\n" << std::endl; 
                     }
 
+
                     break;
-                }           
+                }       
 
                 case 2: {
 
@@ -104,16 +119,29 @@ int main() {
 
                     nlohmann::json req;
                     req["name"] = name;
-                    req["pass"] = pass;
 
-                    SendMessage(s, "0", Requests::Registration, req);
+                    SendMessage(s, "-1", Requests::Registration, req);
                     std::string ans = ReadMessage(s);
 
+
                     if(ans == ERROR::Registration){
-                        std::cout <<"\n-----------------------------------------------\n\t"  << ans << "\n-----------------------------------------------" << std::endl;;
+                        std::cout << std::string(100, '-') << "\n\n\t" << ans << "\n\n" << std::string(100, '-') << "\n" << std::endl; 
                     } else {
-                        usr = std::make_shared<User>(std::stoi(ans), name);
-                        start = false;
+
+
+                        nlohmann::json user_info = nlohmann::json::parse(ans);
+                        req.clear();
+                        req["pass"] = sha256(pass.append(user_info["create_time"]));
+                        SendMessage(s, user_info["user_id"], Requests::Registration, req);
+
+                        std::string ans2 = ReadMessage(s);
+                        if(ans2 == SUCCESS::Update_pass) {
+                            std::string user_id = user_info["user_id"];
+                            usr = std::make_shared<User>(std::stoi(user_id), name);
+                            start = false;
+                        } else {
+                            std::cout << std::string(160, '-') << "\n\n\t" << ans << "\n\n" << std::string(100, '-') << "\n" << std::endl; 
+                        }
                     }
                     
                     break;
@@ -247,7 +275,7 @@ int main() {
                     } while(status);
 
                     std::cout << "\nEnter volum: ";
-                    int64_t volum;
+                    double volum;
                     std::cin >> volum;
                     
                     std::cout << "\nEnter price: ";
@@ -261,7 +289,7 @@ int main() {
                     req["price"] = price;
                     std::string msg = req.dump();
 
-                    SendMessage(s, std::to_string(usr->id()), Requests::Sell, req);
+                    SendMessage(s, std::to_string(usr->id()), type, req);
                     std::cout << "\n" << ReadMessage(s) << "\n" << std::endl;
                     break;
                 }

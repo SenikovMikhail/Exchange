@@ -3,13 +3,11 @@
 
 <div id="header" align="left">
   <img src="https://media.giphy.com/media/S3n6idriKtiFbZyqve/giphy.gif" width="180" />
-  This project is a simple stock exchange is a async client-server application. 
+  This project is a simple stock exchange is a async client-server application. How To Place Text in ImageHow To Place Text in ImageHow To Place Text in ImageHow To Place Text in ImageHow To Place Text in ImageHow To Place Text in ImageHow To Place Text in ImageHow To Place Text in ImageHow To Place Text in ImageHow To Place Text in Image
 </div>
 
 
 ---
-
-Launch
 
   Required libs 
       <ul>
@@ -18,13 +16,13 @@ Launch
       <li>openssl</li>
       <li>nlohmann json</li>
       </ul>
-
+  <br>
   Install
       <ul>
       <li>sudo cmake CMakeLists.txt</li>
       <li>sudo make</li>
       </ul>
-
+  <br>
   Use
     <ol>
       <li>postgresql_setup.sh - create user, database and tables</li>

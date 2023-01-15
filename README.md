@@ -11,7 +11,7 @@
 
 Launch
 
-  Required libs<br>  
+  Required libs 
       <ul>
       <li>Boost</li>
       <li>libpqxx</li>
@@ -19,13 +19,13 @@ Launch
       <li>nlohmann json</li>
       </ul>
 
-  <br>Install<br>
+  Install
       <ul>
       <li>sudo cmake CMakeLists.txt</li>
       <li>sudo make</li>
-      <ul>
+      </ul>
 
-  <br>Use:<br>
+  Use
     <ol>
       <li>postgresql_setup.sh - create user, database and tables</li>
       <li>launch Server</li>

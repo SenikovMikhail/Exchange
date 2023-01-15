@@ -19,12 +19,12 @@ Launch
 
 
   Install  
-      sudo cmake CMakeLists.txt
-      sudo make
+      sudo cmake CMakeLists.txt<br>
+      sudo make<br>
 
   Use:
-      1) postgresql_setup.sh - create user, database and tables
-      2) launch Server
+      1) postgresql_setup.sh - create user, database and tables <br>
+      2) launch Server<br>
       3) launch Client
  
 

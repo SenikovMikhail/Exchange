@@ -11,7 +11,7 @@
 
 Launch
 
-  <br>Required libs<br>  
+  Required libs<br>  
       <ul>
       <li>Boost</li>
       <li>libpqxx</li>
@@ -20,8 +20,10 @@ Launch
       </ul>
 
   <br>Install<br>
-      sudo cmake CMakeLists.txt<br>
-      sudo make<br>
+      <ul>
+      <li>sudo cmake CMakeLists.txt</li>
+      <li>sudo make</li>
+      <ul>
 
   <br>Use:<br>
     <ol>
